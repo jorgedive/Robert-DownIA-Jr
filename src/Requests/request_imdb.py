@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
 
-from src.Exceptions.FormatException import FormatException
 import pandas as pd
 import requests
 from dotenv import load_dotenv
 from requests.exceptions import RequestException
+
+from src.Exceptions.format_exception import FormatException
 
 # Upload environment variables from .env file
 load_dotenv()

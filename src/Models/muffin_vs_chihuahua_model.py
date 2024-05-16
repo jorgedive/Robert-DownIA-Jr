@@ -23,7 +23,7 @@ def download_kaggle_dataset(dataset_name, files_path):
 
 def main():
     files_path = os.getenv("FILES_LOCATION")
-    download_kaggle_dataset('samuelcortinhas/muffin-vs-chihuahua-image-classification', files_path)
+    download_kaggle_dataset(os.getenv("KAGGLE_CHIHUAHUA"), files_path)
 
     images_path = os.path.join(files_path, "PNG", "muffin-chihuahua")
 
