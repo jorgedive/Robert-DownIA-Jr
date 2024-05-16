@@ -2,11 +2,10 @@ import os
 
 from dotenv import load_dotenv
 from kaggle.api.kaggle_api_extended import KaggleApi
-from keras.src.layers import (Conv2D, Flatten, MaxPooling2D, RandomFlip, RandomRotation, RandomZoom, Rescaling,
-                              Resizing)
-from keras.src.optimizers import Adam
 from tensorflow.keras import Input, Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import (Conv2D, Dense, Flatten, MaxPooling2D, RandomFlip, RandomRotation, RandomZoom,
+                                     Rescaling, Resizing)
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import image_dataset_from_directory
 
 load_dotenv()
@@ -58,14 +57,13 @@ def main():
                         Dense(128, activation='relu', kernel_initializer="he_normal"),
                         Dense(1, activation='sigmoid')])
 
-    # RMSprop(momentum=0.9, decay=0.01)
-    model.compile(optimizer=Adam(decay=0.01), loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(weight_decay=0.01), loss='binary_crossentropy', metrics=['accuracy'])
     model.fit(train_ds, validation_data=val_ds, epochs=10)
 
     precision = model.evaluate(val_ds)
     print(f"Model precision = {precision[1] * 100}%. ")
 
-    model.save(os.getenv("MODELS_PATH"))
+    model.save(os.path.join(os.getenv("MODELS_PATH"), "muffin_vs_chihuahua.keras"))
 
 
 if __name__ == "__main__":

@@ -1,28 +1,23 @@
 import os
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem.snowball import SnowballStemmer
-import re
-from dotenv import load_dotenv
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
 import pickle
+import re
+
+import nltk
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
+from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
 
 nltk.download("stopwords")
 nltk.download("punkt")
 
 load_dotenv()
-models_path = os.getenv("MODELS_PATH")
-files_path = os.getenv("FILES_LOCATION")
 
-RECOMMENDER_TYPE = "content_based"
-MODEL = "tfidf_description_matrix.pickle"
-FILE_DATA = "cleaned_content_based.csv"
-
-default_model_path = os.path.join(models_path, RECOMMENDER_TYPE, MODEL)
-default_files_path = os.path.join(files_path, "CSV", FILE_DATA)
+default_model_path = os.path.join(os.getenv("MODELS_PATH"), "content_based", "tfidf_description_matrix.pickle")
+default_files_path = os.path.join(os.getenv("FILES_LOCATION"), "CSV", "cleaned_content_based.csv")
 
 
 def load_data(path=default_files_path):
@@ -108,7 +103,7 @@ def train_content_recommender(dataframe, preprocess_fn=preprocess_data, col="des
 
 
 def get_recommendation(movie, top_n=10, preprocess_fn=preprocess_data, col="description", count_vec=False,
-                                   file_path=default_files_path, model_path=default_model_path):
+                       file_path=default_files_path, model_path=default_model_path):
     """Recommender based on description or movie metadata
     Args:
         movie (str): movie title to take as baseline for the recommendations

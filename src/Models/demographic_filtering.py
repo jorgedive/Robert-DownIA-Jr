@@ -1,25 +1,22 @@
+import ast
 import os
+
 import pandas as pd
 from dotenv import load_dotenv
-import ast
 
 load_dotenv()
-data_path = os.getenv("FILES_LOCATION")
-
-# A Files/CSV/cleaned_movies.csv must exist within the Files folder
-FILENAME = "cleaned_movies.csv"
 
 
-def load_data(path=data_path):
+def load_data(path):
     try:
-        df = pd.read_csv(os.path.join(path, "CSV", FILENAME), low_memory=False)
+        df = pd.read_csv(os.path.join(path, "CSV", "cleaned_movies.csv"), low_memory=False)
         return df
     except Exception as e:
         print(f"Could not retrieve the file. Error: {e}")
         return None
 
 
-def get_demographic_recommendation(genre, path=data_path, q=0.95, n_movies=10):
+def get_demographic_recommendation(genre, q=0.95, n_movies=10):
     """Simple recommender system that provides the top rated movies for a given genre.
         Args:
             genre (str): selected genre to perform the filtering
@@ -31,7 +28,7 @@ def get_demographic_recommendation(genre, path=data_path, q=0.95, n_movies=10):
             movies_list (list): list with the recommended movies
         """
 
-    df = load_data(path)
+    df = load_data(os.getenv("FILES_LOCATION"))
     if df is None:
         raise ValueError("Dataframe not provided.")
 
@@ -68,3 +65,4 @@ def get_demographic_recommendation(genre, path=data_path, q=0.95, n_movies=10):
 
     movies_list = df_genre.sort_values("weighted_score", ascending=False)["title"].to_list()[:n_movies]
     return movies_list
+
