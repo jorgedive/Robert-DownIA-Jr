@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-#from kaggle.api.kaggle_api_extended import KaggleApi
+from kaggle.api.kaggle_api_extended import KaggleApi
 from tensorflow.keras import layers
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras import Sequential
@@ -11,14 +11,14 @@ from tensorflow.keras.applications import MobileNetV2
 load_dotenv()
 
 
-# def download_kaggle_dataset(dataset_name, files_path):
-#     kaggle_path = os.path.join(files_path, "PNG", "muffin-chihuahua")
-#
-#     if not os.path.exists(kaggle_path):
-#         api_kaggle = KaggleApi()
-#         api_kaggle.authenticate()
-#         api_kaggle.dataset_download_files(dataset_name, path=kaggle_path, unzip=True)
-#     return kaggle_path
+def download_kaggle_dataset(dataset_name, files_path):
+    kaggle_path = os.path.join(files_path, "PNG", "muffin-chihuahua")
+
+    if not os.path.exists(kaggle_path):
+        api_kaggle = KaggleApi()
+        api_kaggle.authenticate()
+        api_kaggle.dataset_download_files(dataset_name, path=kaggle_path, unzip=True)
+    return kaggle_path
 
 
 def get_datasets(random_state=42):
@@ -45,10 +45,12 @@ def get_datasets(random_state=42):
 def main():
     files_path = os.getenv("FILES_LOCATION")
     saving_path = os.path.join(os.getenv("MODELS_PATH"), "muffin-chihuahua")
+    if not os.path.exists(saving_path):
+        os.mkdir(saving_path)
     try:
         train_ds, val_ds = get_datasets()
     except:
-        #download_kaggle_dataset(os.getenv("KAGGLE_CHIHUAHUA"), files_path)
+        download_kaggle_dataset(os.getenv("KAGGLE_CHIHUAHUA"), files_path)
         train_ds, val_ds = get_datasets()
 
     resize_and_rescale = Sequential([layers.Resizing(224, 224), layers.Rescaling(1. / 255)])
