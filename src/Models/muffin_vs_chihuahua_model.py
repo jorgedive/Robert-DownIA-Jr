@@ -42,15 +42,15 @@ def get_datasets(random_state=42):
     return train_ds, val_ds
 
 
-def train_model(epochs=50, random_state=42):
-    tf.random.set_seed(random_state)
+def main():
+    tf.random.set_seed(42)
     files_path = os.getenv("FILES_LOCATION")
 
     try:
-        train_ds, val_ds = get_datasets(random_state)
+        train_ds, val_ds = get_datasets()
     except:
         download_kaggle_dataset(os.getenv("KAGGLE_CHIHUAHUA"), files_path)
-        train_ds, val_ds = get_datasets(random_state)
+        train_ds, val_ds = get_datasets()
 
     resize_and_rescale = Sequential([layers.Resizing(128, 128), layers.Rescaling(1. / 255)])
     augment_image = Sequential([layers.RandomFlip("horizontal"), layers.RandomRotation(0.2)])
@@ -76,5 +76,8 @@ def train_model(epochs=50, random_state=42):
                                                   save_best_only=True)
 
     model.compile(optimizer=Adam(learning_rate=1e-3), loss="binary_crossentropy", metrics=["accuracy"])
-    model.fit(train_ds, validation_data=val_ds, epochs=epochs, callbacks=[check_cb])
-    return model
+    model.fit(train_ds, validation_data=val_ds, epochs=60, callbacks=[check_cb])
+
+
+if __name__ == "__main__":
+    main()
