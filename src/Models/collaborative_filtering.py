@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from tensorflow.keras import layers
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import Sequential
 
 load_dotenv()
 
@@ -83,7 +82,6 @@ def decomposition_collaborative(epochs=8, random_state=42):
               shuffle=True)
 
     model.save(os.path.join(saving_path, "collaborative_matrix_decomposition.keras"))
-    return model
 
 
 def deep_collaborative(epochs=8, random_state=42):
@@ -129,4 +127,7 @@ def deep_collaborative(epochs=8, random_state=42):
               shuffle=True)
 
     model.save(os.path.join(saving_path, "collaborative_deep_learning.keras"))
-    return model
+
+
+if __name__ == "__main__":
+    deep_collaborative()
