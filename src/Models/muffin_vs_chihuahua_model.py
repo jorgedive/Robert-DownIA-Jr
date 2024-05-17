@@ -26,18 +26,14 @@ def main():
 
     images_path = os.path.join(files_path, "PNG", "muffin-chihuahua")
 
-    train_ds = image_dataset_from_directory(images_path,
+    train_ds = image_dataset_from_directory(os.path.join(images_path, "train"),
                                             label_mode="binary",
                                             batch_size=16,
-                                            validation_split=0.2,
-                                            subset="training",
                                             seed=42,
                                             interpolation="bicubic")
-    val_ds = image_dataset_from_directory(images_path,
+    val_ds = image_dataset_from_directory(os.path.join(images_path, "test"),
                                           label_mode="binary",
                                           batch_size=16,
-                                          validation_split=0.2,
-                                          subset="validation",
                                           seed=42,
                                           interpolation="bicubic")
 
@@ -49,19 +45,20 @@ def main():
                         augment_image,
                         Input((128, 128, 3)),
                         Conv2D(16, (3, 3), strides=(2, 2), activation='relu', kernel_initializer="he_normal"),
+                        MaxPooling2D((2, 2)),
                         Conv2D(32, (3, 3), strides=(2, 2), activation='relu', kernel_initializer="he_normal"),
                         MaxPooling2D((2, 2)),
-                        Conv2D(32, (3, 3), activation='relu', kernel_initializer="he_normal"),
+                        Conv2D(64, (3, 3), activation='relu', kernel_initializer="he_normal"),
                         MaxPooling2D((2, 2)),
                         Flatten(),
                         Dense(128, activation='relu', kernel_initializer="he_normal"),
                         Dense(1, activation='sigmoid')])
 
     model.compile(optimizer=Adam(weight_decay=0.01), loss='binary_crossentropy', metrics=['accuracy'])
-    model.fit(train_ds, validation_data=val_ds, epochs=10)
+    model.fit(train_ds, validation_data=val_ds, epochs=30)
 
     precision = model.evaluate(val_ds)
-    print(f"Model precision = {precision[1] * 100}%. ")
+    print(precision)
 
     model.save(os.path.join(os.getenv("MODELS_PATH"), "muffin_vs_chihuahua.keras"))
 

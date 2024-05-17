@@ -49,12 +49,9 @@ def __film_search(imdb_id):
     Args:
         imdb_id (str): represents the film's id in imdb.
     """
-    response = requests.get(os.getenv('OMDB_URL') + "?apikey=" + os.getenv('OMDB_API_KEY') + "&i=tt" + imdb_id)
+    response = requests.get(os.getenv('OMDB_URL') + "?apikey=" + os.getenv('OMDB_API_KEY') + "&i=" + imdb_id)
     response.raise_for_status()
     return response.json()
-
-
-imdb_csv_file_location = os.getenv("FILES_LOCATION") + 'CSV/IMDB_Record.csv'
 
 
 def __film_update_csv(film_dict):
@@ -71,22 +68,21 @@ def __film_update_csv(film_dict):
     :raises FormatException: If the film_dict does not follow the existing csv file column pattern or
     the request_key_format pattern.
     """
-
+    imdb_csv_file_location = os.getenv("FILES_LOCATION") + 'CSV/IMDB_Record.csv'
     request_key_format = ["Title", "Year", "Rated", "Released", "Runtime", "Genre", "Director", "Writer", "Actors",
-                          "Plot",
-                          "Language", "Country", "Awards", "Poster", "Ratings", "Metascore", "imdbRating", "imdbVotes",
+                          "Plot", "Language", "Country", "Awards", "Poster", "Metascore", "imdbRating", "imdbVotes",
                           "imdbID", "Type", "DVD", "BoxOffice", "Production", "Website", "Response"]
-
+    film_dict.pop("Ratings")
     if Path(imdb_csv_file_location).exists():
-        historic_films = pd.read_csv(imdb_csv_file_location)
-        if list(film_dict.keys()) == list(historic_films.columns):
-            df = pd.concat([historic_films, film_dict])
-            df.to_csv(imdb_csv_file_location)
+        historic_films = pd.read_csv(imdb_csv_file_location, index_col=None)
+        if set(film_dict.keys()) == set(historic_films.columns):
+            df = pd.concat([historic_films, pd.DataFrame(film_dict, index=[1])], ignore_index=True)
+            df.to_csv(imdb_csv_file_location, index=False)
         else:
             raise FormatException(list(historic_films.columns))
 
     elif list(film_dict.keys()) == request_key_format:
-        pd.DataFrame(film_dict).to_csv(imdb_csv_file_location)
+        pd.DataFrame(film_dict, index=[1]).to_csv(imdb_csv_file_location, index=False)
 
     else:
         raise FormatException(request_key_format)
@@ -105,9 +101,11 @@ def get_film_info(imdb_id):
         imdb_id (str): represents the film's id in imdb.
     """
 
+    imdb_csv_file_location = os.getenv("FILES_LOCATION") + 'CSV/IMDB_Record.csv'
+    imdb_id = "tt" + imdb_id
     try:
         with open(imdb_csv_file_location, 'r') as csv_file:
-            historic_films = pd.read_csv(csv_file)
+            historic_films = pd.read_csv(csv_file, index_col=None)
 
         film = historic_films[historic_films['imdbID'] == imdb_id]
 

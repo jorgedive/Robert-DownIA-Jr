@@ -9,7 +9,7 @@ load_dotenv()
 
 def create_movies_csv():
     movies_df = pd.read_csv(os.path.join(os.getenv("FILES_LOCATION"), "CSV", "movies_metadata.csv"), low_memory=False)
-
+    print(movies_df.columns)
     movies_df = movies_df[movies_df["adult"] == "False"].drop(columns=["adult"])
     movies_df = movies_df[movies_df["status"] != "Canceled"]
     movies_df = movies_df[movies_df["overview"].notnull()]
