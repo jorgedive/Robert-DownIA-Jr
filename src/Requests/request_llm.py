@@ -1,14 +1,10 @@
-from dotenv import load_dotenv
-from langchain_community.llms.ollama import Ollama
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 
 from src.Requests.request_imdb import get_film_info
 
-load_dotenv()
 
-
-def ollama_api_request_movie_dict(imdb_id):
+def ollama_api_request_movie_dict(imdb_id, model):
     try:
         film_dict = get_film_info(imdb_id)
         movie_name = film_dict["Title"]
@@ -22,7 +18,6 @@ def ollama_api_request_movie_dict(imdb_id):
         user_template = HumanMessagePromptTemplate.from_template(movie_name)
         template = ChatPromptTemplate.from_messages([system_template, user_template])
 
-        model = Ollama(model="llama3")
         chain = (template
                  | model
                  | JsonOutputParser()

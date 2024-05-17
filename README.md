@@ -12,4 +12,3 @@ A .env file cointaining:
     3. A PNG folder containing all the images that will be downloaded.
 - The Kaggle Chihuahuas vs Muffin Dataset. The corresponding repository can be found in this
   link: https://www.kaggle.com/datasets/samuelcortinhas/muffin-vs-chihuahua-image-classification
-- 
