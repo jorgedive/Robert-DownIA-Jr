@@ -12,7 +12,8 @@ FILENAME = "cleaned_movies.csv"
 
 def load_data(path=data_path):
     try:
-        df = pd.read_csv(os.path.join(path, "CSV", FILENAME), low_memory=False)
+        df = pd.read_csv(path, low_memory=False,
+                         usecols=["title", "genres", "vote_count", "vote_average"])
         return df
     except Exception as e:
         print(f"Could not retrieve the file. Error: {e}")
@@ -49,7 +50,6 @@ def get_demographic_recommendation(genre, path=data_path, q=0.95, n_movies=10):
     except AssertionError as e:
         print(f"Number of movies must be positive. Error: {e}")
 
-    genre = genre.capitalize()
     df["genres"] = df["genres"].apply(lambda x: ast.literal_eval(x))  # Evaluate entries as lists
     df["tmp_mask"] = df["genres"].apply(lambda x: genre in x)  # Mask to filter entries with the specified genre
     df_genre = df[df["tmp_mask"]]  # Filtered df by the mask
@@ -67,4 +67,4 @@ def get_demographic_recommendation(genre, path=data_path, q=0.95, n_movies=10):
     df_genre["weighted_score"] = df_genre.apply(wr_func, axis=1, C=C, m=m)
 
     movies_list = df_genre.sort_values("weighted_score", ascending=False)["title"].to_list()[:n_movies]
-    return movies_list
+    return "\n".join(movies_list)

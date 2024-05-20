@@ -27,7 +27,8 @@ default_files_path = os.path.join(files_path, "CSV", FILE_DATA)
 
 def load_data(path=default_files_path):
     try:
-        df = pd.read_csv(path, low_memory=False)
+        df = pd.read_csv(path, low_memory=False,
+                         usecols=["title", "description", "metadata", "vote_count", "vote_average"])
         return df
     except Exception as e:
         print(f"Could not retrieve the file. Error: {e}")
@@ -141,7 +142,7 @@ def get_recommendation(movie, top_n=10, preprocess_fn=preprocess_data, col="desc
     movie_indices = scores[1:top_n + 1]
 
     movies_list = df["title"].iloc[movie_indices].to_list()
-    return movies_list
+    return "\n".join(movies_list)
 
 
 def improved_recommendations(movie, q=0.6, top_n=25, preprocess_fn=preprocess_data, col="description", count_vec=False,
