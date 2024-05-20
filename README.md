@@ -11,5 +11,6 @@ A .env file cointaining:
   2. A models folder that will contain all the models in local (for local execution of scripts).
   3. A PNG folder containing all the images that will be downloaded.
   4. A TXT folder containing TXT files.
+  5. A ChromaDB folder to contain the local chromaDB to store the embeddings. 
 - The Kaggle Chihuahuas vs Muffin Dataset. The corresponding repository can be found in this
   link: https://www.kaggle.com/datasets/samuelcortinhas/muffin-vs-chihuahua-image-classification
