@@ -68,7 +68,7 @@ def __film_update_csv(film_dict):
     :raises FormatException: If the film_dict does not follow the existing csv file column pattern or
     the request_key_format pattern.
     """
-    imdb_csv_file_location = os.getenv("FILES_LOCATION") + 'CSV/IMDB_Record.csv'
+    imdb_csv_file_location = os.path.join(os.getenv("FILES_LOCATION"), 'CSV', 'IMDB_Record.csv')
     request_key_format = ["Title", "Year", "Rated", "Released", "Runtime", "Genre", "Director", "Writer", "Actors",
                           "Plot", "Language", "Country", "Awards", "Poster", "Metascore", "imdbRating", "imdbVotes",
                           "imdbID", "Type", "DVD", "BoxOffice", "Production", "Website", "Response"]
@@ -102,7 +102,7 @@ def get_film_info(imdb_id):
     """
 
     imdb_csv_file_location = os.getenv("FILES_LOCATION") + 'CSV/IMDB_Record.csv'
-    imdb_id = "tt" + imdb_id
+    imdb_id = imdb_id if imdb_id.startswith("tt") else "tt" + imdb_csv_file_location
     try:
         with open(imdb_csv_file_location, 'r') as csv_file:
             historic_films = pd.read_csv(csv_file, index_col=None)

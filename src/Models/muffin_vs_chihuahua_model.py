@@ -13,7 +13,7 @@ load_dotenv()
 
 
 def download_kaggle_dataset(dataset_name, files_path):
-    kaggle_path = os.path.join(files_path, "PNG", "muffin-chihuahua")
+    kaggle_path = os.path.join(files_path, "PNG", "muffin_chihuahua")
 
     if not os.path.exists(kaggle_path):
         api_kaggle = KaggleApi()
@@ -29,14 +29,12 @@ def get_datasets(random_state=42):
     train_ds = image_dataset_from_directory(
         os.path.join(images_path, "train"),
         label_mode="binary",
-        batch_size=32,
         seed=random_state,
         interpolation="bicubic")
 
     val_ds = image_dataset_from_directory(
         os.path.join(images_path, "test"),
         label_mode="binary",
-        batch_size=32,
         seed=random_state,
         interpolation="bicubic")
 
