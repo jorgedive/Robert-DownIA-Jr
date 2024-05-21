@@ -68,6 +68,9 @@ for col in ("keywords", "cast"):
 cntn_based["genres"] = cntn_based["genres"].transform(
     func=lambda iterable: [elem.lower().replace(" ", "") for elem in literal_eval(iterable)])
 
+cntn_based["metadata"] = cntn_based["keywords"] + cntn_based["cast"] + cntn_based["director"] + cntn_based["genres"]
+cntn_based["metadata"] = cntn_based["metadata"].transform(func=lambda x: " ".join(x))
+
 cntn_based = cntn_based.drop_duplicates("id")
 cntn_based = cntn_based.drop_duplicates("title")
 
