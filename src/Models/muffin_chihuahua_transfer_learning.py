@@ -11,21 +11,19 @@ from tensorflow.keras.utils import image_dataset_from_directory
 load_dotenv()
 
 
-def download_kaggle_dataset(dataset_name, files_path):
-    """ Downloads the dataset with dataset_name from kaggle using the kaggle API in case is not already downloaded.
-    Args:
-        dataset_name (str) - name of the dataset to be fetched
-        files_path (str) - path containing the files of the project
+def download_kaggle_dataset():
+    """ Downloads the dataset with the Kaggle Chihuahua environment variable from kaggle using the kaggle API in case
+    is not already downloaded.
     Returns:
         kaggle_path (str) - path where the kaggle dataset will be stored
     """
 
-    kaggle_path = os.path.join(files_path, "PNG", "muffin-chihuahua")
+    kaggle_path = os.path.join(os.getenv("FILES_PATH"), "PNG", "muffin-chihuahua")
 
     if not os.path.exists(kaggle_path):
         api_kaggle = KaggleApi()
         api_kaggle.authenticate()
-        api_kaggle.dataset_download_files(dataset_name, path=kaggle_path, unzip=True)
+        api_kaggle.dataset_download_files(os.getenv("KAGGLE_CHIHUAHUA"), path=kaggle_path, unzip=True)
     return kaggle_path
 
 
@@ -38,7 +36,7 @@ def get_datasets(random_state=42):
         val_ds (tf.data.Dataset) - validation dataset
     """
 
-    files_path = os.getenv("FILES_LOCATION")
+    files_path = os.getenv("FILES_PATH")
     images_path = os.path.join(files_path, "PNG", "muffin_chihuahua")
 
     train_ds = image_dataset_from_directory(
@@ -62,14 +60,13 @@ def main():
     """Trains the MobileNetV2 model using 2 Dense layers on top of it to perform a fine-tuning
     on the dataset"""
 
-    files_path = os.getenv("FILES_LOCATION")
-    saving_path = os.path.join(os.getenv("MODELS_PATH"), "muffin-chihuahua")
+    saving_path = os.path.join(os.getenv("FILES_PATH"), "models", "muffin-chihuahua")
     if not os.path.exists(saving_path):
         os.mkdir(saving_path)
     try:
         train_ds, val_ds = get_datasets()
     except:
-        download_kaggle_dataset(os.getenv("KAGGLE_CHIHUAHUA"), files_path)
+        download_kaggle_dataset()
         train_ds, val_ds = get_datasets()
 
     resize_and_rescale = Sequential([layers.Resizing(224, 224), layers.Rescaling(1. / 255)])

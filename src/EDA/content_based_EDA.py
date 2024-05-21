@@ -10,17 +10,15 @@ load_dotenv()
 
 
 def create_content_based_csv():
-    files_path = os.getenv("FILES_LOCATION")
+    files_path = os.getenv("FILES_PATH")
 
     df = pd.read_csv(os.path.join(files_path, "CSV", "cleaned_movies.csv"), low_memory=False)
     credits_df = pd.read_csv(os.path.join(files_path, "CSV", "credits.csv"), low_memory=False)
     keyw = pd.read_csv(os.path.join(files_path, "CSV", "keywords.csv"), low_memory=False)
 
     cntn_based = df.merge(credits_df, on="id", how="inner")
-    cntn_based = cntn_based.merge(keyw, on="id", how="inner").drop_duplicates("id")
-
-    print("merged.head() = ")
-    print(cntn_based.head())
+    cntn_based = cntn_based.merge(keyw, on="id", how="inner")
+    cntn_based = cntn_based.drop_duplicates()
 
     list_converter = lambda iterable: [element["name"] for element in literal_eval(iterable)] if isinstance(
         literal_eval(iterable), list) else []
@@ -56,6 +54,9 @@ def create_content_based_csv():
 
     cntn_based["genres"] = cntn_based["genres"].transform(
         func=lambda iterable: [elem.lower().replace(" ", "") for elem in literal_eval(iterable)])
+
+    cntn_based["metadata"] = cntn_based["keywords"] + cntn_based["cast"] + cntn_based["director"] + cntn_based["genres"]
+    cntn_based["metadata"] = cntn_based["metadata"].transform(func=lambda x: " ".join(x))
 
     cntn_based = cntn_based.drop_duplicates("id")
     cntn_based = cntn_based.drop_duplicates("title")

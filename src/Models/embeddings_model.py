@@ -10,25 +10,48 @@ from langchain_openai import OpenAIEmbeddings
 load_dotenv()
 
 
+def initialise_model():
+    """ Initialises OpenAI Embedding with the provided embeddings.
+
+    Returns:
+       An OpenAIEmbeddings instance of the embedding model.
+    """
+    return OpenAIEmbeddings(model=os.getenv("OPENAI_EMBD_MODEL"), openai_api_key=os.getenv("OPENAI_API_KEY"))
+
+
 def initialise_db():
-    chromadb_client = chromadb.PersistentClient(os.path.join(os.getenv("FILES_LOCATION"), 'ChromaDB'))
-    return chromadb_client.get_or_create_collection("film_embeddings")
+    """ Initialises the database and the collection with the given collection name
+     in the provided files path. If the path does not exist, then it creates it.
+
+     Returns:
+         A ChromaDB collection instance with the cosine similarity function.
+    """
+    chroma_path = os.path.join(os.getenv("FILES_PATH"), 'ChromaDB')
+    if not os.path.exists(chroma_path):
+        os.mkdir(chroma_path)
+
+    chromadb_client = chromadb.PersistentClient(os.path.join(os.getenv("FILES_PATH"), 'ChromaDB'))
+    return chromadb_client.get_or_create_collection(os.getenv("COLLECTION_NAME"),
+                                                    metadata={"hnsw:space": "cosine"})
 
 
 def main():
-    csv_path = os.path.join(os.getenv("FILES_LOCATION"), "CSV")
-    df_in_batches = pd.read_csv(os.path.join(csv_path, "cleaned_movies.csv"),
-                                usecols=["title", "genres", "description"], low_memory=False)
+    """ Creates all the embeddings from the cleaned movies df and upserts them in a chroma db instance.
 
-    df_in_batches['description'] = "Description: " + df_in_batches['description'] + " Genres: " + df_in_batches[
+    """
+    csv_path = os.path.join(os.getenv("FILES_PATH"), "CSV")
+    df = pd.read_csv(os.path.join(csv_path, "cleaned_movies.csv"),
+                     usecols=["title", "genres", "description"], low_memory=False)
+
+    df['description'] = "Description: " + df['description'] + " Genres: " + df[
         'genres'].apply(
         lambda x: ", ".join(literal_eval(x)))
-    df_in_batches.drop(columns=['genres'], inplace=True)
+    df.drop(columns=['genres'], inplace=True)
 
     collection = initialise_db()
-    model = OpenAIEmbeddings(model="text-embedding-ada-002", openai_api_key=os.getenv("OPENAI_API_KEY"))
-    embeddings = model.embed_documents(list(df_in_batches['description']))
-    collection.add(ids=df_in_batches['title'].tolist(), embeddings=embeddings)
+    model = initialise_model()
+    embeddings = model.embed_documents(list(df['description']))
+    collection.upsert(ids=df['title'].tolist(), embeddings=embeddings)
 
 
 if __name__ == "__main__":

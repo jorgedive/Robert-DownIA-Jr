@@ -11,7 +11,7 @@ load_dotenv()
 
 def load_data():
     try:
-        df = pd.read_csv(os.path.join(os.getenv("FILES_LOCATION"), "CSV", "cleaned_ratings.csv"), low_memory=False)
+        df = pd.read_csv(os.path.join(os.getenv("FILES_PATH"), "CSV", "cleaned_ratings.csv"), low_memory=False)
         return df
     except Exception as e:
         print(f"Could not retrieve the file. Error: {e}")
@@ -46,7 +46,7 @@ def preparare_data(train_set, test_set):
 def decomposition_collaborative(epochs=8, random_state=42):
     tf.random.set_seed(42)
 
-    saving_path = os.path.join(os.getenv("MODELS_PATH"), "collaborative_filtering")
+    saving_path = os.path.join(os.getenv("FILES_PATH"), "models", "collaborative_filtering")
     if not os.path.exists(saving_path):
         os.mkdir(saving_path)
 
@@ -88,7 +88,7 @@ def decomposition_collaborative(epochs=8, random_state=42):
 def deep_collaborative(epochs=8, random_state=42):
     tf.random.set_seed(42)
 
-    saving_path = os.path.join(os.getenv("MODELS_PATH"), "collaborative_filtering")
+    saving_path = os.path.join(os.getenv("FILES_PATH"), "models", "collaborative_filtering")
     if not os.path.exists(saving_path):
         os.mkdir(saving_path)
 
