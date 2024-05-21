@@ -10,8 +10,8 @@ import pickle
 import numpy as np
 import pandas as pd
 
-nltk.download("stopwords")
-nltk.download("punkt")
+#nltk.download("stopwords")
+#nltk.download("punkt")
 
 load_dotenv()
 models_path = os.getenv("MODELS_PATH")
@@ -172,7 +172,7 @@ def improved_recommendations(movie, q=0.6, top_n=25, preprocess_fn=preprocess_da
 
     recommended_movies = get_recommendation(movie, top_n, preprocess_fn, col, count_vec, file_path, model_path)
     df = load_data(file_path)
-    recommended_df = df[df["title"].isin(recommended_movies)]
+    recommended_df = df[df["title"].isin(recommended_movies.split("\n"))]
 
     def wr_func(data, C, m):
         v = data["vote_count"]
@@ -184,4 +184,4 @@ def improved_recommendations(movie, q=0.6, top_n=25, preprocess_fn=preprocess_da
     recommended_df = recommended_df[recommended_df["vote_count"] > m]
     recommended_df["weighted_score"] = recommended_df.apply(wr_func, axis=1, C=C, m=m)
 
-    return recommended_df.sort_values(by="weighted_score", ascending=False)["title"].to_list()
+    return "\n".join(recommended_df.sort_values(by="weighted_score", ascending=False)["title"].to_list())
