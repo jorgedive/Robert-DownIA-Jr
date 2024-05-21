@@ -10,8 +10,6 @@ import pickle
 import numpy as np
 import pandas as pd
 
-nltk.download("stopwords")
-nltk.download("punkt")
 
 load_dotenv()
 models_path = os.getenv("MODELS_PATH")
@@ -25,9 +23,16 @@ default_model_path = os.path.join(models_path, RECOMMENDER_TYPE, MODEL)
 default_files_path = os.path.join(files_path, "CSV", FILE_DATA)
 
 
+def nltk_stopwords_punkt_download(state=False):
+    if state:
+        nltk.download("stopwords")
+        nltk.download("punkt")
+
+
 def load_data(path=default_files_path):
     try:
-        df = pd.read_csv(path, low_memory=False)
+        df = pd.read_csv(path, low_memory=False,
+                         usecols=["title", "description", "metadata", "vote_count", "vote_average"])
         return df
     except Exception as e:
         print(f"Could not retrieve the file. Error: {e}")
@@ -108,7 +113,7 @@ def train_content_recommender(dataframe, preprocess_fn=preprocess_data, col="des
 
 
 def get_recommendation(movie, top_n=10, preprocess_fn=preprocess_data, col="description", count_vec=False,
-                                   file_path=default_files_path, model_path=default_model_path):
+                                   file_path=default_files_path, model_path=default_model_path, state=False):
     """Recommender based on description or movie metadata
     Args:
         movie (str): movie title to take as baseline for the recommendations
@@ -118,10 +123,13 @@ def get_recommendation(movie, top_n=10, preprocess_fn=preprocess_data, col="desc
         count_vec (bool): boolean to indicate if use CountVectorizer. Default False
         file_path (str): path where the csv data file is located
         model_path (str): path where the model is stored
+        state (bool): boolean used to download the needed nltk packages
 
     Returns:
         movies_list (list): list with the recommended movies
     """
+
+    nltk_stopwords_punkt_download(state)
 
     df = load_data(file_path)
     if df is None:
@@ -141,11 +149,11 @@ def get_recommendation(movie, top_n=10, preprocess_fn=preprocess_data, col="desc
     movie_indices = scores[1:top_n + 1]
 
     movies_list = df["title"].iloc[movie_indices].to_list()
-    return movies_list
+    return "\n".join(movies_list)
 
 
 def improved_recommendations(movie, q=0.6, top_n=25, preprocess_fn=preprocess_data, col="description", count_vec=False,
-                             file_path=default_files_path, model_path=default_model_path):
+                             file_path=default_files_path, model_path=default_model_path, state=False):
     """Recommender based on description or movie metadata
     Args:
         movie (str): movie title to take as baseline for the recommendations
@@ -156,6 +164,7 @@ def improved_recommendations(movie, q=0.6, top_n=25, preprocess_fn=preprocess_da
         count_vec (bool): boolean to indicate if use CountVectorizer. Default False
         file_path (str): path where the csv data file is located
         model_path (str): path where the model is stored
+        state (bool): boolean used to download the needed nltk packages
 
     Returns:
         movies_list (list): list with the recommended movies
@@ -169,9 +178,9 @@ def improved_recommendations(movie, q=0.6, top_n=25, preprocess_fn=preprocess_da
     except AssertionError as e:
         print(f"Number of movies must be positive. Error: {e}")
 
-    recommended_movies = get_recommendation(movie, top_n, preprocess_fn, col, count_vec, file_path, model_path)
+    recommended_movies = get_recommendation(movie, top_n, preprocess_fn, col, count_vec, file_path, model_path, state)
     df = load_data(file_path)
-    recommended_df = df[df["title"].isin(recommended_movies)]
+    recommended_df = df[df["title"].isin(recommended_movies.split("\n"))]
 
     def wr_func(data, C, m):
         v = data["vote_count"]
@@ -183,4 +192,4 @@ def improved_recommendations(movie, q=0.6, top_n=25, preprocess_fn=preprocess_da
     recommended_df = recommended_df[recommended_df["vote_count"] > m]
     recommended_df["weighted_score"] = recommended_df.apply(wr_func, axis=1, C=C, m=m)
 
-    return recommended_df.sort_values(by="weighted_score", ascending=False)["title"].to_list()
+    return "\n".join(recommended_df.sort_values(by="weighted_score", ascending=False)["title"].to_list())

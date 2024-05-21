@@ -12,6 +12,14 @@ load_dotenv()
 
 
 def download_kaggle_dataset(dataset_name, files_path):
+    """ Downloads the dataset with dataset_name from kaggle using the kaggle API in case is not already downloaded.
+    Args:
+        dataset_name (str) - name of the dataset to be fetched
+        files_path (str) - path containing the files of the project
+    Returns:
+        kaggle_path (str) - path where the kaggle dataset will be stored
+    """
+
     kaggle_path = os.path.join(files_path, "PNG", "muffin-chihuahua")
 
     if not os.path.exists(kaggle_path):
@@ -22,6 +30,14 @@ def download_kaggle_dataset(dataset_name, files_path):
 
 
 def get_datasets(random_state=42):
+    """Fetches the stored dataset to return TensorFlow Dataset objects for the training.
+    Args:
+        random_state (int) - seed to set the random shuffle of the fetched data
+    Returns:
+        train_ds (tf.data.Dataset) - training dataset
+        val_ds (tf.data.Dataset) - validation dataset
+    """
+
     files_path = os.getenv("FILES_LOCATION")
     images_path = os.path.join(files_path, "PNG", "muffin_chihuahua")
 
@@ -43,6 +59,9 @@ def get_datasets(random_state=42):
 
 
 def main():
+    """Trains the MobileNetV2 model using 2 Dense layers on top of it to perform a fine-tuning
+    on the dataset"""
+
     files_path = os.getenv("FILES_LOCATION")
     saving_path = os.path.join(os.getenv("MODELS_PATH"), "muffin-chihuahua")
     if not os.path.exists(saving_path):
