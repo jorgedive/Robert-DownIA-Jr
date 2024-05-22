@@ -91,4 +91,5 @@ embedding_recommender = gr.Interface(
 app = gr.TabbedInterface([demographic, content_based, hybrid, muffin_chihuahua, embedding_recommender],
                          ["Genre", "Synopsis", "Hybrid", "Chihuahuas", "Recommender"])
 
-app.launch(debug=True)
+if __name__ == "__main__":
+    app.launch(debug=True)

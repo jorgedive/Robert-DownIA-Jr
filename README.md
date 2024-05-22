@@ -2,6 +2,18 @@
 
 Film recommendation.
 
+---
+title: "Robert-DownIA-Jr"
+emoji: 😎
+colorFrom: "purple"
+colorTo: "indigo"
+sdk: "docker"
+app_port: 8080
+python_version: "3.11.9"
+app_file: app.py
+pinned: true
+---
+
 ### Requirements
 
 The .env file must contain:
