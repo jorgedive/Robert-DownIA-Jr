@@ -39,4 +39,4 @@ RUN chmod 777 $HOME/app/Files
 EXPOSE 8080
 
 # Define the command to run the application using Gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "src/app:app"]
