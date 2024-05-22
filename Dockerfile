@@ -35,9 +35,6 @@ COPY --chown=user . $HOME/app
 RUN mkdir -p $HOME/app/Files
 RUN chmod 777 $HOME/app/Files
 
-# Copy the Files directory to the specified location in the container (optional and not recommended).
-COPY Files/ $HOME/app/Files/
-
 # Expose port 8080 for the application
 EXPOSE 8080
 
