@@ -8,14 +8,7 @@ from requests.exceptions import RequestException
 
 from src.Exceptions.format_exception import FormatException
 
-# Upload environment variables from .env file
 load_dotenv()
-
-url_omdb = os.getenv('OMDB_URL') + os.getenv('OMDB_API_KEY') + "&i="
-
-request_key_format = ["Title", "Year", "Rated", "Released", "Runtime", "Genre", "Director", "Writer", "Actors", "Plot",
-                      "Language", "Country", "Awards", "Poster", "Ratings", "Metascore", "imdbRating", "imdbVotes",
-                      "imdbID", "Type", "DVD", "BoxOffice", "Production", "Website", "Response"]
 
 
 def __film_search(imdb_id):
@@ -53,15 +46,12 @@ def __film_search(imdb_id):
         "Website":
         "Response":
     }
-
-    :param imdb_id: imdb_id
+    Args:
+        imdb_id (str): represents the film's id in imdb.
     """
-    response = requests.get(url_omdb + imdb_id).json()
+    response = requests.get(os.getenv('OMDB_URL') + "?apikey=" + os.getenv('OMDB_API_KEY') + "&i=" + imdb_id)
     response.raise_for_status()
-    return response
-
-
-imdb_csv_file_location = os.getenv("FILES_LOCATION") + 'CSV/IMDB_Record.csv'
+    return response.json()
 
 
 def __film_update_csv(film_dict):
@@ -73,22 +63,26 @@ def __film_update_csv(film_dict):
     If it does not, then creates a new .csv file in the given location with one row, that being the film_dict
     keys and values.
 
-    :param film_dict:
-    :return: None
+    Args:
+        film_dict: a dictionary containing info from a film.
     :raises FormatException: If the film_dict does not follow the existing csv file column pattern or
     the request_key_format pattern.
     """
-
+    imdb_csv_file_location = os.path.join(os.getenv("FILES_LOCATION"), 'CSV', 'IMDB_Record.csv')
+    request_key_format = ["Title", "Year", "Rated", "Released", "Runtime", "Genre", "Director", "Writer", "Actors",
+                          "Plot", "Language", "Country", "Awards", "Poster", "Metascore", "imdbRating", "imdbVotes",
+                          "imdbID", "Type", "DVD", "BoxOffice", "Production", "Website", "Response"]
+    film_dict.pop("Ratings")
     if Path(imdb_csv_file_location).exists():
-        historic_films = pd.read_csv(imdb_csv_file_location)
-        if list(film_dict.keys()) == list(historic_films.columns):
-            df = pd.concat([historic_films, film_dict])
-            df.to_csv(imdb_csv_file_location)
+        historic_films = pd.read_csv(imdb_csv_file_location, index_col=None)
+        if set(film_dict.keys()) == set(historic_films.columns):
+            df = pd.concat([historic_films, pd.DataFrame(film_dict, index=[1])], ignore_index=True)
+            df.to_csv(imdb_csv_file_location, index=False)
         else:
             raise FormatException(list(historic_films.columns))
 
     elif list(film_dict.keys()) == request_key_format:
-        pd.DataFrame(film_dict).to_csv(imdb_csv_file_location)
+        pd.DataFrame(film_dict, index=[1]).to_csv(imdb_csv_file_location, index=False)
 
     else:
         raise FormatException(request_key_format)
@@ -103,14 +97,15 @@ def get_film_info(imdb_id):
     If one row sharing the imdbID exists, it returns said row as a dictionary. If multiple rows sharing that imdbID
     exists, the user must input a text casteable to an integer, that will be reduced modulo the number of rows sharing
     the imdbID and will return that row as a dictionary.
-
-    :param imdb_id: imdb_id
-    :return: film dictionary associated to the imdb_id
+    Args:
+        imdb_id (str): represents the film's id in imdb.
     """
 
+    imdb_csv_file_location = os.getenv("FILES_LOCATION") + 'CSV/IMDB_Record.csv'
+    imdb_id = imdb_id if imdb_id.startswith("tt") else "tt" + imdb_csv_file_location
     try:
         with open(imdb_csv_file_location, 'r') as csv_file:
-            historic_films = pd.read_csv(csv_file)
+            historic_films = pd.read_csv(csv_file, index_col=None)
 
         film = historic_films[historic_films['imdbID'] == imdb_id]
 
@@ -136,8 +131,9 @@ def get_film_info(imdb_id):
                 row_number %= len(film)
                 row_dict = film.iloc[row_number].to_dict()
                 return row_dict.to_dict(orient='records')[0]
-            except ValueError:
+            except ValueError as value_error:
                 print(f"User input must casteable as an integer, instead it was {row_input}.")
+                raise value_error
 
     except FileNotFoundError:
         try:
@@ -147,15 +143,19 @@ def get_film_info(imdb_id):
 
         except RequestException as request_exception:
             print("Invalid API Request. Unable to produce a response.", request_exception)
+            raise request_exception
 
         except FormatException as format_exception:
             print(format_exception.mensaje)
+            raise format_exception
 
     except pd.errors.ParserError:
         raise ValueError("Error de análisis al leer el archivo CSV: {}".format(imdb_csv_file_location))
 
     except RequestException as request_exception:
         print("Invalid API Request. Unable to produce a response.", request_exception)
+        raise request_exception
 
     except FormatException as format_exception:
         print(format_exception.mensaje)
+        raise format_exception

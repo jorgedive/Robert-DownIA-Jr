@@ -1,15 +1,17 @@
-import pandas as pd
 import os
+
+import pandas as pd
+import tensorflow as tf
 from dotenv import load_dotenv
 from tensorflow.keras import layers
-import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 
 load_dotenv()
 
+
 def load_data():
     try:
-        df = pd.read_csv(os.path.join(os.getenv("FILES_LOCATION"), "CSV", "cleaned_ratings.csv"), low_memory=False)
+        df = pd.read_csv(os.path.join(os.getenv("FILES_PATH"), "CSV", "cleaned_ratings.csv"), low_memory=False)
         return df
     except Exception as e:
         print(f"Could not retrieve the file. Error: {e}")
@@ -44,7 +46,7 @@ def preparare_data(train_set, test_set):
 def decomposition_collaborative(epochs=8, random_state=42):
     tf.random.set_seed(42)
 
-    saving_path = os.path.join(os.getenv("MODELS_PATH"), "collaborative_filtering")
+    saving_path = os.path.join(os.getenv("FILES_PATH"), "models", "collaborative_filtering")
     if not os.path.exists(saving_path):
         os.mkdir(saving_path)
 
@@ -52,19 +54,18 @@ def decomposition_collaborative(epochs=8, random_state=42):
     user_train, user_test, user_emb, movie_train, movie_test, movie_emb = preparare_data(df_train, df_test)
     embedding_dim = 10
 
-
     user_input = layers.Input(shape=(1,), name="user_in")
     movie_input = layers.Input(shape=(1,), name="movie_in")
 
     user_embeddings = layers.Embedding(output_dim=embedding_dim,
-                                                input_dim=user_emb,
-                                                input_length=1,
-                                                name="user_embedding_layer")(user_input)
+                                       input_dim=user_emb,
+                                       input_length=1,
+                                       name="user_embedding_layer")(user_input)
 
     movie_embeddings = layers.Embedding(output_dim=embedding_dim,
-                                                 input_dim=movie_emb,
-                                                 input_length=1,
-                                                 name="movie_embedding_layer")(movie_input)
+                                        input_dim=movie_emb,
+                                        input_length=1,
+                                        name="movie_embedding_layer")(movie_input)
 
     user_vector = layers.Reshape([embedding_dim])(user_embeddings)
     movie_vector = layers.Reshape([embedding_dim])(movie_embeddings)
@@ -87,7 +88,7 @@ def decomposition_collaborative(epochs=8, random_state=42):
 def deep_collaborative(epochs=8, random_state=42):
     tf.random.set_seed(42)
 
-    saving_path = os.path.join(os.getenv("MODELS_PATH"), "collaborative_filtering")
+    saving_path = os.path.join(os.getenv("FILES_PATH"), "models", "collaborative_filtering")
     if not os.path.exists(saving_path):
         os.mkdir(saving_path)
 

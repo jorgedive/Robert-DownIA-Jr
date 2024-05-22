@@ -1,30 +1,26 @@
+import ast
 import os
+
 import pandas as pd
 from dotenv import load_dotenv
-import ast
 
 load_dotenv()
-data_path = os.getenv("FILES_LOCATION")
 
 
-FILENAME = "cleaned_movies.csv"
-
-
-def load_data(path=data_path):
+def load_data():
     try:
-        df = pd.read_csv(path, low_memory=False,
+        df = pd.read_csv(os.path.join(os.getenv("FILES_PATH"), "CSV", "cleaned_movies.csv"), low_memory=False,
                          usecols=["title", "genres", "vote_count", "vote_average"])
         return df
     except Exception as e:
         print(f"Could not retrieve the file. Error: {e}")
-        return None
+        pass
 
 
-def get_demographic_recommendation(genre, path=data_path, q=0.95, n_movies=10):
+def get_demographic_recommendation(genre, q=0.95, n_movies=10):
     """Simple recommender system that provides the top rated movies for a given genre.
         Args:
             genre (str): selected genre to perform the filtering
-            path (str): path where the file to load as a dataframe is located
             q (float): q quantile to perform the filtering on the top q movies. Default 0.95
             n_movies (int): number of movies to show to the user
 
@@ -32,7 +28,7 @@ def get_demographic_recommendation(genre, path=data_path, q=0.95, n_movies=10):
             movies_list (list): list with the recommended movies
         """
 
-    df = load_data(path)
+    df = load_data()
     if df is None:
         raise ValueError("Dataframe not provided.")
 
@@ -58,11 +54,10 @@ def get_demographic_recommendation(genre, path=data_path, q=0.95, n_movies=10):
         R = data["vote_average"]
         return (v / (v + m) * R) + (m / (v + m) * C)
 
-
-    C = df_genre["vote_average"].mean()
-    m = df_genre["vote_count"].quantile(q)
-    df_genre = df_genre[df_genre["vote_count"] > m]
-    df_genre["weighted_score"] = df_genre.apply(wr_func, axis=1, C=C, m=m)
+    vote_avg_mean = df_genre["vote_average"].mean()
+    vote_count_quantile = df_genre["vote_count"].quantile(q)
+    df_genre = df_genre[df_genre["vote_count"] > vote_count_quantile]
+    df_genre["weighted_score"] = df_genre.apply(wr_func, axis=1, C=vote_avg_mean, m=vote_count_quantile)
 
     movies_list = df_genre.sort_values("weighted_score", ascending=False)["title"].to_list()[:n_movies]
     return "\n".join(movies_list)

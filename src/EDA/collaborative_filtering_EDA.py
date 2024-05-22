@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-files_path = os.getenv("FILES_LOCATION")
+files_path = os.getenv("FILES_PATH")
 ratings_csv = os.path.join(files_path, "CSV", "ratings.csv")
 
 df = pd.read_csv(ratings_csv, low_memory=False)
