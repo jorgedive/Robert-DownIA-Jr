@@ -1,7 +1,3 @@
-# Robert-DownIA-Jr
-
-Film recommendation.
-
 ---
 title: "Robert-DownIA-Jr"
 emoji: 😎
@@ -13,6 +9,10 @@ python_version: "3.11.9"
 app_file: app.py
 pinned: true
 ---
+
+# Robert-DownIA-Jr
+
+Film recommendation.
 
 ### Requirements
 
